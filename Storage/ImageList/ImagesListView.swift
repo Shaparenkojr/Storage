@@ -2,9 +2,24 @@ import UIKit
 
 class ImagesListView: UIView {
     
-    private enum Constants {
-        static let showNextScreenButtonTitle = "Добавить изображение на сервер"
-    }
+
+    
+
+    
+    private lazy var showNextScreenButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Добавление изображений на сервер", for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.borderColor = UIColor.systemBlue.cgColor
+        button.layer.borderWidth = 2
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.addTarget(self,
+                         action: #selector(showNextControllerButtonHandler),
+                         for: .touchUpInside)
+        return button
+    }()
     
     private lazy var imagesCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -15,32 +30,17 @@ class ImagesListView: UIView {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.dataSource = self
         collectionView.register(ImageCollectionCell.self, forCellWithReuseIdentifier: ImageCollectionCell.identifier)
-        collectionView.backgroundColor = .systemGray6
+        collectionView.backgroundColor = .white
         return collectionView
     }()
     
-    private lazy var showNextScreenButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle(Constants.showNextScreenButtonTitle, for: .normal)
-        button.layer.cornerRadius = 12
-        button.layer.borderColor = UIColor.systemBlue.cgColor
-        button.layer.borderWidth = 2
-        button.backgroundColor = .systemBlue 
-        button.setTitleColor(.white, for: .normal)
-        button.addTarget(self,
-                         action: #selector(showNextControllerButtonHandler),
-                         for: .touchUpInside)
-        return button
-    }()
-    
     private let viewModel: ImagesListViewModel
-    private let imageCellViewModel: ImageCellViewModel
+    private let CellViewModel: CellViewModel
     private var images: [ImagesListModel]?
     
-    init(frame: CGRect, viewModel: ImagesListViewModel, imageCellViewModel: ImageCellViewModel) {
+    init(frame: CGRect, viewModel: ImagesListViewModel, CellViewModel: CellViewModel) {
         self.viewModel = viewModel
-        self.imageCellViewModel = imageCellViewModel
+        self.CellViewModel = CellViewModel
         super.init(frame: frame)
         setupView()
     }
@@ -69,8 +69,8 @@ extension ImagesListView: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
         let imageUrl = imagesModel[indexPath.item].url
-        cell.viewModel = imageCellViewModel
-        cell.backgroundColor = .white 
+        cell.viewModel = CellViewModel
+        cell.backgroundColor = .white
         cell.layer.cornerRadius = 8
         cell.layer.masksToBounds = true
         if let cachedImage = Memory.shared.getImageFromMemory(for: imageUrl) {
@@ -98,17 +98,18 @@ private extension ImagesListView {
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            imagesCollectionView.topAnchor.constraint(equalTo: topAnchor),
-            imagesCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            imagesCollectionView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
+            showNextScreenButton.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            showNextScreenButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            showNextScreenButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            showNextScreenButton.heightAnchor.constraint(equalToConstant: 60)
         ])
         
         NSLayoutConstraint.activate([
-            showNextScreenButton.topAnchor.constraint(equalTo: imagesCollectionView.bottomAnchor, constant: 16),
-            showNextScreenButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            showNextScreenButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            showNextScreenButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
-            showNextScreenButton.heightAnchor.constraint(equalToConstant: 60)
+            imagesCollectionView.topAnchor.constraint(equalTo: showNextScreenButton.bottomAnchor, constant: 16),
+            imagesCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            imagesCollectionView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            imagesCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16)
         ])
     }
+
 }

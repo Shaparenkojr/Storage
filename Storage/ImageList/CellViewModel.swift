@@ -1,12 +1,12 @@
 import Foundation
 import Combine
 
-class ImageCellViewModel {
+class CellViewModel {
     
-    @Published private(set) var imageData: [String : Data] = [:]
-    @Published private(set) var imageDataProgress: [String : Float] = [:]
+    @Published private(set) var imageData: [String: Data] = [:]
+    @Published private(set) var imageDataProgress: [String: Float] = [:]
+    @Published var lastError: Error? 
     
-    private var imageUrl: String?
     private var subscriptions: Set<AnyCancellable> = []
     private let networkManager: ImagesListNetworkProtocol
     
@@ -14,17 +14,19 @@ class ImageCellViewModel {
         self.networkManager = networkManager
     }
     
+    
     func loadImage(from url: String) {
         let downloadPublisher = networkManager.fetchImage(imageURL: url)
         
         downloadPublisher.dataPublisher
             .receive(on: DispatchQueue.main)
-            .sink { completion in
+            .sink { [weak self] completion in
                 switch completion {
                 case .finished:
-                    print("Фото загружено")
+                    print("Image successfully loaded from \(url)")
                 case .failure(let error):
-                    print("Ошибка: \(error)")
+                    print("Error loading image from \(url): \(error)")
+                    self?.lastError = error
                 }
             } receiveValue: { [weak self] data in
                 self?.imageData[url] = data

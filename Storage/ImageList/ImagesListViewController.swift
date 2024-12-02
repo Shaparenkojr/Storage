@@ -4,13 +4,13 @@ import Combine
 class ImagesViewController: UIViewController {
     
     private lazy var imagesListView: ImagesListView = {
-        let view = ImagesListView(frame: .zero, viewModel: viewModel, imageCellViewModel: imageCellViewModel)
+        let view = ImagesListView(frame: .zero, viewModel: viewModel, CellViewModel: CellViewModel)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private let viewModel: ImagesListViewModel
-    private let imageCellViewModel: ImageCellViewModel
+    private let CellViewModel: CellViewModel
     private var subscriptions: Set<AnyCancellable> = []
 
     override func viewDidLoad() {
@@ -24,9 +24,9 @@ class ImagesViewController: UIViewController {
         super.viewWillAppear(animated)
     }
     
-    init(viewModel: ImagesListViewModel, imageCellViewModel: ImageCellViewModel) {
+    init(viewModel: ImagesListViewModel, CellViewModel: CellViewModel) {
         self.viewModel = viewModel
-        self.imageCellViewModel = imageCellViewModel
+        self.CellViewModel = CellViewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -89,8 +89,10 @@ private extension NavigationController {
     func setupNavigation() {
         let networkManager: ImagesListNetworkProtocol = NetworkService()
         let imagesViewModel = ImagesListViewModel(networkManager: networkManager)
-        let imageCellViewModel = ImageCellViewModel(networkManager: networkManager)
-        let imagesListController = ImagesViewController(viewModel: imagesViewModel, imageCellViewModel: imageCellViewModel)
+        let CellViewModel = CellViewModel(networkManager: networkManager)
+        let imagesListController = ImagesViewController(viewModel: imagesViewModel, CellViewModel: CellViewModel)
         viewControllers = [imagesListController]
     }
+    
 }
+

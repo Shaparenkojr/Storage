@@ -10,7 +10,7 @@ protocol MediaUploadViewDelegate: AnyObject {
 class MediaUploadView: UIView {
     
     private enum Constants {
-        static let inputUrlPlaceHolder = "Введите url "
+        static let inputUrlPlaceHolder = "Введите url фото для загрузки на сервер "
         static let getImageFromGalleryButtonTitle = "Добавте фото из галереи"
         static let getImageFromNetButtonTitle = "Загрузить фото с интернета"
         static let uploadImageButtonTitle = "Отправить фото на сервер"
@@ -190,7 +190,6 @@ private extension MediaUploadView {
     @objc
     func getImageFromGallaryTapped() {
         delegete?.showImagePicker()
-        inputUrlToDownloadTextField.text = ""
     }
     
     @objc

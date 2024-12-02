@@ -40,7 +40,7 @@ class ImageCollectionCell: UICollectionViewCell {
         return label
     }()
     
-    var viewModel: ImageCellViewModel?
+    var viewModel: CellViewModel?
     
     private var subscriptions: Set<AnyCancellable> = []
     private var imageUrl: String?
@@ -131,6 +131,7 @@ private extension ImageCollectionCell {
         contentView.layer.borderColor = UIColor.black.cgColor
         contentView.layer.borderWidth = 1
         contentView.layer.cornerRadius = 10
+        contentView.backgroundColor = .systemMint
         
         setupConstraints()
     }

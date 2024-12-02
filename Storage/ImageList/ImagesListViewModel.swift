@@ -1,11 +1,11 @@
-
-
 import Foundation
 import Combine
+
 
 class ImagesListViewModel {
     
     @Published private(set) var images: [ImagesListModel] = []
+    @Published var errorMessage: String?
     
     private let networkManager: ImagesListNetworkProtocol
     private var subscriptions: Set<AnyCancellable> = []
@@ -15,30 +15,45 @@ class ImagesListViewModel {
         self.networkManager = networkManager
     }
     
+    /// Fetches all image data from the server.
     func getAllImagesData() {
         networkManager.fetchImagesData(model: [ImagesListModel].self)
             .receive(on: DispatchQueue.main)
-            .sink { result in
+            .sink { [weak self] result in
                 switch result {
                 case .finished:
-                    print("success to get data")
+                    print("Successfully fetched data")
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    self?.handleError(error)
                 }
-            } receiveValue: { imagesData in
-                self.images = imagesData
+            } receiveValue: { [weak self] imagesData in
+                self?.images = imagesData
             }
             .store(in: &subscriptions)
     }
     
+
     func buttonDidTapped() {
         navigateToNextScreen.send()
     }
     
+
     func addNewImageURL(_ url: String) {
+        guard !images.contains(where: { $0.url == url }) else {
+            errorMessage = "Image with this URL already exists."
+            return
+        }
         images.insert(ImagesListModel(url: url), at: images.endIndex)
     }
+    
+
+    private func handleError(_ error: Error) {
+        errorMessage = error.localizedDescription
+        print("Error: \(error.localizedDescription)")
+    }
+    
 }
+
 protocol ImagesListNetworkProtocol {
     func fetchImagesData<T: Codable>(model: T.Type) -> AnyPublisher<T, Error>
     func fetchImage(imageURL: String) -> ImageDownloadPublisher

@@ -3,12 +3,7 @@ import UIKit
 import Combine
 
 class MediaUploadViewController: UIViewController {
-    
-    private enum Constants {
-        static let errorTitle = "Ошибка"
-        static let messageTitle = "Sucsess"
-        static let okButtonTitle = "Ок"
-    }
+
     
     private lazy var mediaUploadView: MediaUploadView = {
         let view = MediaUploadView(frame: .zero, viewModel: viewModel, delegate: self)
@@ -25,7 +20,7 @@ class MediaUploadViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupController()
-        setupBindings()
+//        setupBindings()
     }
     
     init(viewModel: MediaUploadViewModel, imagesListViewModel: ImagesListViewModel) {
@@ -68,71 +63,6 @@ extension MediaUploadViewController: UIImagePickerControllerDelegate, UINavigati
 }
 
 private extension MediaUploadViewController {
-    
-    func setupBindings() {
-        viewModel.$imageData
-            .sink { [weak self] imageData in
-                if let imageData {
-                    if let image = imageData.0 {
-                        self?.mediaUploadView.setReadyState()
-                        self?.mediaUploadView.setImage(with: image, for: imageData.1)
-                        self?.uploadingImageUrl = imageData.1
-                    }
-                }
-            }
-            .store(in: &subscriptions)
-        
-        viewModel.$processState
-            .sink { [weak self] processState in
-                switch processState {
-                case .idle:
-                    self?.mediaUploadView.setIdleState()
-                case .loading:
-                    self?.mediaUploadView.setLoadingState(for: .loadingFromNet)
-                case .optimizing:
-                    self?.mediaUploadView.setLoadingState(for: .optimizingImage)
-                case .ready:
-                    self?.mediaUploadView.setReadyState()
-                case .uploadingOnServer:
-                    self?.mediaUploadView.setLoadingState(for: .uploadingOnServer)
-                }
-            }
-            .store(in: &subscriptions)
-        
-        viewModel.$requestError
-            .sink { [weak self] error in
-                if !error.isEmpty {
-                    self?.showAlert(forMessage: error,
-                                    withTitle: Constants.errorTitle)
-                }
-            }
-            .store(in: &subscriptions)
-        
-        viewModel.$requestResultMessage
-            .sink { [weak self] message in
-                if !message.isEmpty {
-                    self?.showAlert(forMessage: message,
-                                    withTitle: Constants.messageTitle)
-                }
-            }
-            .store(in: &subscriptions)
-        
-    }
-    
-    func showAlert(forMessage errorMessage: String, withTitle title: String) {
-        let alert = UIAlertController(title: title, message: errorMessage, preferredStyle: .alert)
-        let okButton = UIAlertAction(title: Constants.okButtonTitle, style: .default,
-                                     handler: { [weak self] _ in
-            if let url = self?.uploadingImageUrl, !url.isEmpty {
-                self?.imageListViewModel.addNewImageURL(url)
-                self?.popToPreviousController()
-            } else {
-                self?.popToPreviousController()
-            }
-        })
-        alert.addAction(okButton)
-        self.present(alert, animated: true)
-    }
     
     func popToPreviousController() {
         self.navigationController?.popViewController(animated: true)

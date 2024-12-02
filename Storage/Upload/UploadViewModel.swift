@@ -25,23 +25,21 @@ class MediaUploadViewModel {
     
     func getImageBaseOnURL(_ url: String) {
         processState = .loading
+        
         networkService.getImageFromUrl(from: url)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] result in
                 switch result {
                 case .finished:
-                    print("success to get image")
+                    print("Success to get image")
+                    self?.processState = .idle 
                 case .failure(let error):
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        self?.processState = .idle
-                        self?.requestError = "\(error.localizedDescription)"
-                    }
+                    self?.processState = .idle
+                    self?.requestError = "Failed to load image: \(error.localizedDescription)"
                 }
             } receiveValue: { [weak self] data in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    self?.processState = .optimizing
-                }
-                DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                self?.processState = .optimizing
+                DispatchQueue.global().async {
                     let compressedData = data.compression()
                     DispatchQueue.main.async {
                         self?.imageData = (compressedData, url)
@@ -54,14 +52,15 @@ class MediaUploadViewModel {
     
     func uploadImage(with imageData: Data) {
         processState = .uploadingOnServer
+        
         networkService.uploadImageToServer(imageData: imageData)
             .receive(on: DispatchQueue.main)
             .sink { result in
                 switch result {
                 case .finished:
-                    print("uploaded to server")
+                    print("Uploaded to server")
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    print("Upload error: \(error.localizedDescription)")
                 }
             } receiveValue: { [weak self] serverResponse in
                 self?.processState = .ready
@@ -69,6 +68,4 @@ class MediaUploadViewModel {
             }
             .store(in: &subscriptions)
     }
-    
 }
-
